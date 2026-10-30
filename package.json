@@ -1,0 +1,17 @@
+{
+  "name": "liquid-glass-webgl",
+  "version": "1.0.0",
+  "description": "WebGL2 liquid glass components — port of Kyant0/AndroidLiquidGlass",
+  "type": "module",
+  "main": "dist/liquid-glass.js",
+  "module": "dist/liquid-glass.esm.js",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": ["liquid-glass", "webgl", "glassmorphism", "shader", "ui", "backdrop"],
+  "license": "AGPL-3.0-or-later",
+  "author": "silverbullet-liang",
+  "repository": { "type": "git", "url": "https://github.com/silverbullet-liang/liquid-glass-webgl.git" }
+}

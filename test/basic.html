@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8">
+<title>glass basic</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#000}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}</style>
+</head><body>
+<canvas id="c"></canvas>
+<script>window.addEventListener('error',e=>{document.title='ERR '+e.message});window.addEventListener('unhandledrejection',e=>{document.title='REJ '+(e.reason&&e.reason.message||e.reason)})</script>
+<script type="module">
+import { GlassRenderer, GlassNode } from '/src/core.js';
+
+const r = new GlassRenderer('#c', { dpr: 1, preserveDrawingBuffer: true });
+r.setBackgroundPainter((ctx, w, h) => {
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#12203a'); g.addColorStop(0.45, '#2c4a7c'); g.addColorStop(1, '#0b1020');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle='#ff0000'; ctx.fillRect(0,0,44,44);
+  ctx.fillStyle='#00ff00'; ctx.fillRect(w-44,h-44,44,44);
+  const colors = ['#ff6b6b', '#ffd93d', '#4ecdc4', '#a06cd5', '#ff9f45'];
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.fillStyle = colors[i];
+    ctx.arc(70 + i * 90, 160 + Math.sin(i * 1.7) * 60, 60, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.font = '700 34px system-ui';
+  ctx.fillText('Liquid Glass', 40, 90);
+  ctx.font = '500 16px system-ui';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText('backdrop content behind the glass panel', 40, 120);
+  for (let y = 0; y < 6; y++) for (let x = 0; x < 4; x++) {
+    ctx.fillStyle = `rgba(255,255,255,${0.05 + (x + y) * 0.012})`;
+    ctx.fillRect(40 + x * 88, 380 + y * 60, 72, 44);
+  }
+});
+
+const btn = new GlassNode({ x: 40, y: 240, w: 220, h: 48, radius: 24 });
+btn.blur = 2; btn.lensH = 12; btn.lensA = 24;
+btn.setContent((ctx, w, h) => {
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '600 16px system-ui';
+  ctx.fillText('Liquid Button', w / 2, h / 2);
+});
+r.add(btn);
+
+const card = new GlassNode({ x: 40, y: 320, w: 220, h: 140, radius: 28 });
+card.blur = 8; card.lensH = 24; card.lensA = 24;
+r.add(card);
+r.start();
+
+setTimeout(() => {
+  const tmp = document.createElement('canvas');
+  tmp.width = r.canvas.width; tmp.height = r.canvas.height;
+  const c2 = tmp.getContext('2d');
+  c2.drawImage(r.canvas, 0, 0);
+  const p1 = Array.from(c2.getImageData(200, 780, 1, 1).data);
+  const p2 = Array.from(c2.getImageData(140, 844 - 240, 1, 1).data);
+  const p3 = Array.from(c2.getImageData(140, 844 - 330, 1, 1).data);
+  document.title = `READY W${r.W} nodes${r.nodes.length} bg=${p1} btn=${p2} card=${p3}`;
+}, 1200);
+window.__dbg = { r, btn, card };
+</script>
+</body></html>

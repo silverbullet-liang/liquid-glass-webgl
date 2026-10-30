@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Liquid Glass · WebGL</title>
+<meta name="description" content="WebGL2 port of Kyant0/AndroidLiquidGlass — liquid glass components for the web.">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070c; color-scheme: dark; }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+    touch-action: none; -webkit-tap-highlight-color: transparent; user-select: none; }
+  #hint { position: fixed; left: 0; right: 0; bottom: 3px; text-align: center; pointer-events: none;
+    font: 500 10px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif;
+    color: rgba(255,255,255,.28); letter-spacing: .05em; transition: color .3s; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>window.addEventListener("error",e=>{window.__err=(window.__err||"")+" | "+e.message});window.addEventListener("unhandledrejection",e=>{window.__err=(window.__err||"")+" | REJ "+((e.reason&&e.reason.message)||e.reason)})</script>
+<div id="hint">按住唤出放大镜 · 双击切换明暗 · 点击卡片打开对话框</div>
+<script type="module">
+import { LiquidGlass } from '../src/index.js';
+
+const app = new LiquidGlass('#stage', { theme: 'dark', paint: wallpaper });
+const mag = app.magnifier({ d: 128 });
+let page = Number(new URLSearchParams(location.search).get('p') || 0);
+
+/* ------------------------------------------------------------------ 壁纸 --- */
+function wallpaper(ctx, w, h) {
+  const g = ctx.createLinearGradient(0, 0, w * 0.55, h);
+  g.addColorStop(0, '#0a1020');
+  g.addColorStop(0.40, '#132a4e');
+  g.addColorStop(0.74, '#2a1f4c');
+  g.addColorStop(1, '#07090f');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  const blobs = [
+    [0.14, 0.17, 0.26, '#ff7a45', 0.62],
+    [0.86, 0.12, 0.22, '#3ea6ff', 0.55],
+    [0.62, 0.40, 0.30, '#c04df2', 0.45],
+    [0.10, 0.80, 0.28, '#12d6a4', 0.34],
+    [0.92, 0.66, 0.22, '#ffd60a', 0.20],
+  ];
+  for (const [bx, by, br, col, a] of blobs) {
+    const cx = bx * w, cy = by * h, r = br * Math.min(w, h);
+    const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    rg.addColorStop(0, col);
+    rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha = a;
+    ctx.fillStyle = rg;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.beginPath();
+  for (let x = 0; x < w; x += 28) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); }
+  for (let y = 0; y < h; y += 28) { ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); }
+  ctx.stroke();
+
+  const size = 54, gapX = 20, gapY = 38;
+  const cols = Math.max(2, Math.floor((w - 48) / (size + gapX)));
+  const palette = ['#0a84ff', '#ff9f0a', '#ff375f', '#30d158', '#bf5af2', '#64d2ff', '#ffd60a', '#ff6482'];
+  for (let i = 0; i < cols * 2; i++) {
+    const x = 24 + (i % cols) * (size + gapX);
+    const y = 150 + Math.floor(i / cols) * (size + gapY);
+    ctx.fillStyle = palette[i % palette.length];
+    ctx.beginPath();
+    ctx.roundRect(x, y, size, size, 14);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc(x + size / 2, y + size / 2, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(255,255,255,0.94)';
+  ctx.font = '700 28px -apple-system, "PingFang SC", system-ui, sans-serif';
+  ctx.fillText('Liquid Glass', 24, 58);
+  ctx.fillStyle = 'rgba(255,255,255,0.40)';
+  ctx.font = '500 11px -apple-system, system-ui, sans-serif';
+  ctx.fillText('WebGL2 · port of Kyant0/AndroidLiquidGlass', 24, 78);
+}
+
+/* ------------------------------------------------------------------ 构建 --- */
+const LABELS = ['Controls', 'Lab', 'Lock'];
+let dlg = null;
+let cc = null;
+
+function clear() {
+  for (const n of app.nodes.slice()) if (n !== mag) app.remove(n);
+  dlg = null;
+  cc = null;
+}
+
+function build() {
+  clear();
+  const W = app.renderer.cssW;
+  const H = app.renderer.cssH;
+  const m = W < 420 ? 18 : Math.max(24, (W - 384) / 2);
+  const cw = W - m * 2;
+
+  // page switcher
+  app.segmented({
+    x: m, y: Math.max(H * 0.235, 210), w: cw, items: LABELS, index: page,
+    onChange: (i) => { if (i !== page) { page = i; build(); } },
+  });
+
+  const top = Math.max(H * 0.235, 210) + 52;
+  if (page === 0) buildControls(W, H, m, cw, top);
+  else if (page === 1) buildLab(W, H, m, cw, top);
+  else buildLock(W, H, m, cw, top);
+
+  app.tabs({
+    x: m, y: H - 94, w: cw, index: page === 2 ? 3 : page,
+    tabs: [
+      { icon: 'home', label: 'Home' },
+      { icon: 'grid', label: 'Lab' },
+      { icon: 'search', label: 'Search' },
+      { icon: 'gear', label: 'Panel' },
+    ],
+    onChange: (i) => {
+      if (i === 3) toggleControlCenter();
+      else if (i !== page) { page = i; build(); }
+    },
+  });
+  app.invalidate();
+}
+
+function buildControls(W, H, m, cw, top) {
+  const listH = Math.max(132, Math.min(178, H * 0.195));
+  app.scrollContainer({
+    x: m, y: top, w: cw, h: listH,
+    items: [
+      { title: 'Refraction', sub: 'lens 24 · 24' },
+      { title: 'Dispersion', sub: '7-tap split' },
+      { title: 'Vibrancy', sub: 'saturation 1.5' },
+      { title: 'Highlight', sub: 'SDF gradient' },
+      { title: 'Shadow', sub: 'gaussian SDF' },
+    ],
+  });
+  let y = top + listH + 14;
+
+  app.slider({ x: m + 12, y, w: cw - 24, value: 0.62 });
+  y += 54;
+
+  const row = (yy, text, selected) => {
+    const lw = Math.min(196, cw * 0.56);
+    const lab = app.card({ x: m, y: yy, w: lw, h: 40, radius: 20, blur: 16, tint: [1, 1, 1], tintA: 0.05 });
+    lab.setContent((ctx, w, h) => {
+      ctx.fillStyle = app.theme.fg;
+      ctx.font = '600 14px -apple-system, "PingFang SC", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 16, h / 2);
+    });
+    lab.hit = () => false;
+    app.toggle({ x: m + cw - 64, y: yy + 6, selected });
+  };
+  row(y, 'Bloom', true);
+  row(y + 46, 'Motion', false);
+  y += 96;
+
+  const bw = Math.min(cw * 0.56, 214);
+  app.button({ x: m, y, w: bw, icon: 'plus', label: 'New note', onClick: () => app.toast({ text: 'Note created' }) });
+  app.button({ x: m + bw + 10, y, w: cw - bw - 10, icon: 'share', label: 'Info', onClick: openDialog });
+}
+
+function buildLab(W, H, m, cw, top) {
+  const cardW = Math.min(cw, 320);
+  const cx = (W - cardW) / 2;
+  const demo = app.card({
+    x: cx, y: top, w: cardW, h: 132, radius: 34,
+    blur: 8, lensH: 20, lensA: 22,
+  });
+  demo.inner = { color: [0, 0, 0], alpha: 0.12, blur: 12, ox: 0, oy: 12 };
+  let press = 0;
+  demo.onUpdate = () => {
+    press += (0 - press) * 0.12;
+    demo.press = press;
+  };
+  demo.setContent((ctx, w, h) => {
+    ctx.fillStyle = app.theme.fg;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '700 20px -apple-system, "PingFang SC", system-ui, sans-serif';
+    ctx.fillText('Live playground', w / 2, h / 2 - 12);
+    ctx.fillStyle = app.theme.fgDim;
+    ctx.font = '500 12px -apple-system, system-ui, sans-serif';
+    ctx.fillText(`blur ${demo.blur | 0} · lens ${demo.lensH | 0}/${demo.lensA | 0}`, w / 2, h / 2 + 14);
+  });
+
+  let y = top + 152;
+  const tune = (label, min, max, value, apply, fmt) => {
+    const lab = app.card({ x: m, y: y - 8, w: cw, h: 44, radius: 22, blur: 14, tint: [1, 1, 1], tintA: 0.05 });
+    lab.hit = () => false;
+    lab.setContent((ctx, w, h) => {
+      ctx.fillStyle = app.theme.fgDim;
+      ctx.font = '600 12px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, 16, h / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = app.theme.fg;
+      ctx.fillText(fmt(value), w - 16, h / 2);
+    });
+    const s = app.slider({
+      x: m + 12, y: y + 34, w: cw - 24, value: (value - min) / (max - min),
+      onChange: (v) => {
+        const real = min + (max - min) * v;
+        apply(real);
+        lab.invalidate();
+        demo.invalidate();
+        app.invalidate();
+      },
+    });
+    s.hit = ((orig) => (px, py) => orig(px, py))(s.hit);
+    y += 96;
+    return s;
+  };
+
+  tune('Blur radius', 0, 30, 8, (v) => { demo.blur = v; }, (v) => v.toFixed(1));
+  tune('Lens height', 0, 40, 20, (v) => { demo.lensH = v; }, (v) => v.toFixed(0));
+  tune('Lens amount', 0, 40, 22, (v) => { demo.lensA = v; }, (v) => v.toFixed(0));
+}
+
+function buildLock(W, H, m, cw, top) {
+  app.lockScreen({ x: m, y: top, w: cw, h: 176 });
+  const listY = top + 196;
+  const listH = Math.min(210, H - listY - 130);
+  app.progressiveBlur({ x: m, y: listY, w: cw, h: 26, dir: 'top', strength: 18, z: 41 });
+  app.progressiveBlur({ x: m, y: listY + listH - 26, w: cw, h: 26, dir: 'bottom', strength: 18, z: 41 });
+  app.scrollContainer({
+    x: m, y: listY, w: cw, h: listH, radius: 30, blur: 12,
+    items: Array.from({ length: 10 }, (_, i) => ({ title: `Notification ${i + 1}`, sub: 'now' })),
+  });
+}
+
+/* -------------------------------------------------------------- 对话框/CC -- */
+function openDialog() {
+  if (dlg) return;
+  dlg = app.dialog({
+    title: 'Liquid Glass',
+    body: 'Every pixel behind this panel is resampled through a rounded-rect lens, blurred by a separable gaussian, then re-lit by an SDF edge highlight.',
+    confirm: 'Dismiss',
+    onClose: () => { dlg = null; },
+  });
+}
+
+function toggleControlCenter() {
+  if (cc) { for (const n of cc.nodes) app.remove(n); cc = null; app.invalidate(); return; }
+  cc = app.controlCenter({ y: Math.max(64, app.renderer.cssH * 0.07) });
+}
+
+/* ---------------------------------------------------------------- 交互 ----- */
+let hold = 0;
+app.onPointerDown = (p) => {
+  hold = setTimeout(() => {
+    mag.visible = true;
+    mag.x = p.x - mag.w / 2;
+    mag.y = p.y - mag.h / 2 - 76;
+    app.invalidate();
+  }, 240);
+};
+app.onPointerMove = (p) => {
+  if (!mag.visible) return;
+  mag.x = p.x - mag.w / 2;
+  mag.y = p.y - mag.h / 2 - 76;
+  app.invalidate();
+};
+app.onPointerUp = () => {
+  clearTimeout(hold);
+  if (mag.visible) { mag.visible = false; app.invalidate(); }
+};
+
+let lastTap = 0;
+app.canvas.addEventListener('pointerup', () => {
+  const now = performance.now();
+  if (now - lastTap < 320) {
+    const next = app.themeName === 'dark' ? 'light' : 'dark';
+    app.setTheme(next);
+    document.documentElement.style.colorScheme = next;
+    app.setBackground((ctx, w, h) => wallpaper(ctx, w, h));
+  }
+  lastTap = now;
+});
+
+let rt = 0;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(build, 180); });
+
+build();
+window.__lg = app;
+</script>
+</body>
+</html>

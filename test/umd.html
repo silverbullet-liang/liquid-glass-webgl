@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>umd</title>
+<style>html,body{margin:0;height:100%;background:#000}#c{position:fixed;inset:0;width:100%;height:100%}</style></head>
+<body><canvas id="c"></canvas>
+<script>window.addEventListener('error',e=>{window.__err=(window.__err||'')+' | '+e.message})</script>
+<script src="../dist/liquid-glass.js"></script>
+<script>
+const app = new LiquidGlass('#c', { theme:'dark', paint:(ctx,w,h)=>{ctx.fillStyle='#234';ctx.fillRect(0,0,w,h);for(let i=0;i<8;i++){ctx.fillStyle=['#f66','#fd3','#4ec','#a6d'][i%4];ctx.beginPath();ctx.arc(40+i*44,120,34,0,7);ctx.fill();}} });
+app.button({x:30,y:240,w:180,label:'UMD build',icon:'check'});
+app.toggle({x:30,y:310,selected:true});
+app.slider({x:30,y:370,w:220,value:0.5});
+app.tabs({x:20,y:700,w:350,index:1,tabs:[{icon:'home'},{icon:'grid'},{icon:'search'},{icon:'gear'}]});
+window.__lg = app;
+</script></body></html>

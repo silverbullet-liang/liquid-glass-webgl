@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>stripes</title>
+<style>html,body{margin:0;height:100%;background:#000}#c{position:fixed;inset:0;width:100%;height:100%}</style>
+</head><body>
+<canvas id="c"></canvas>
+<script type="module">
+import { GlassRenderer, GlassNode } from '/src/core.js';
+const r = new GlassRenderer('#c', { dpr: 1, preserveDrawingBuffer: true });
+r.setBackgroundPainter((ctx, w, h) => {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+  for (let x = 0; x < w; x += 20) {
+    ctx.fillStyle = (x / 20) % 2 === 0 ? '#ffffff' : '#000000';
+    ctx.fillRect(x, 0, 20, h);
+  }
+});
+const q = new URLSearchParams(location.search);
+const n = new GlassNode({ x: 40, y: 240, w: 220, h: 60, radius: 30 });
+n.blur = Number(q.get('blur') ?? 0);
+n.lensH = Number(q.get('lh') ?? 12);
+n.lensA = Number(q.get('la') ?? 24);
+if (q.get('nohl')) n.highlight = null;
+if (q.get('nosh')) n.shadow = { color: [0, 0, 0], alpha: 0, blur: 0, ox: 0, oy: 0 };
+r.add(n);
+r.start();
+</script>
+</body></html>

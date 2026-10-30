@@ -1,0 +1,40 @@
+Liquid Glass for WebGL
+Copyright (C) 2025-2026 silverbullet-liang and contributors
+Licensed under the GNU Affero General Public License v3.0 or later (see LICENSE).
+
+This product includes software and design work developed by Kyant:
+
+  AndroidLiquidGlass — "Compose Multiplatform Liquid Glass effect"
+  Copyright (C) 2025 Kyant
+  https://github.com/Kyant0/AndroidLiquidGlass
+  Licensed under the Apache License, Version 2.0
+  (http://www.apache.org/licenses/LICENSE-2.0)
+
+What was taken from the original and is therefore covered by the notice above:
+
+  * the AGSL shader sources in backdrop/internal/Shaders.kt
+    (RoundedRectSDF, RoundedRectRefractionShader,
+     RoundedRectRefractionWithDispersionShader,
+     DefaultHighlightShader, AmbientHighlightShader);
+  * the highlight / shadow / inner-shadow compositing model
+    (HighlightStyle.kt, HighlightModifier.kt, ShadowModifier.kt,
+     InnerShadowModifier.kt) and its default constants;
+  * the vignette math of InteractiveHighlight;
+  * the component specifications of the catalog
+    (LiquidButton, LiquidSlider, LiquidToggle, LiquidBottomTabs,
+     ControlCenter, Dialog, Magnifier, LockScreen) including their
+    dp values, effect stacks, spring parameters and accent colours.
+
+What is new in this project:
+
+  * the entire WebGL2 rendering pipeline (FBO layer compositing, separable
+    gaussian pass, SDF-based analytic shadows, canvas-to-texture backdrop);
+  * the GLSL transliteration of the AGSL shaders;
+  * the JavaScript component runtime, event model, spring solver and the
+    public API.
+
+The Apache-2.0 licensed portions above are used and redistributed here under
+the terms of the Apache License 2.0, which is compatible with this project's
+AGPL-3.0-or-later license. No file from the original repository is copied
+verbatim; the shaders were translated to GLSL ES 3.00 and the Kotlin UI code
+was re-implemented for the browser.
