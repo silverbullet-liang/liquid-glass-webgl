@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>cdn</title>
+<style>html,body{margin:0;height:100%;background:#000}#c{position:fixed;inset:0;width:100%;height:100%}</style></head>
+<body><canvas id="c"></canvas>
+<script>window.addEventListener('error',e=>{window.__err=(window.__err||'')+' | '+e.message})</script>
+<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.min.js"></script>
+<script>
+const app = new LiquidGlass('#c', { theme:'dark', paint:(ctx,w,h)=>{
+  ctx.fillStyle='#101a2e'; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<10;i++){ctx.fillStyle=['#ff7a45','#3ea6ff','#c04df2','#12d6a4'][i%4];
+    ctx.beginPath(); ctx.arc(30+i*40,300,26,0,7); ctx.fill();}
+}});
+app.card({x:24,y:120,w:342,h:120,radius:30,blur:8,lensH:20,lensA:22});
+app.button({x:24,y:280,w:200,label:'CDN works',icon:'check'});
+app.toggle({x:280,y:288,selected:true});
+app.tabs({x:20,y:720,w:350,index:1,tabs:[{icon:'home'},{icon:'grid'},{icon:'search'},{icon:'gear'}]});
+window.__lg = app;
+</script></body></html>

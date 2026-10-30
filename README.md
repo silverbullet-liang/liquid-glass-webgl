@@ -16,11 +16,11 @@ npm i liquid-glass-webgl
 
 ```html
 <!-- UMD：挂到 window.LiquidGlass -->
-<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@1.0.0/dist/liquid-glass.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.min.js"></script>
 
 <!-- ESM -->
 <script type="module">
-  import { LiquidGlass } from 'https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@1.0.0/dist/liquid-glass.esm.js';
+  import { LiquidGlass } from 'https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.esm.js';
 </script>
 ```
 
@@ -28,7 +28,7 @@ npm i liquid-glass-webgl
 
 ```html
 <canvas id="stage" style="position:fixed;inset:0;width:100%;height:100%"></canvas>
-<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@1.0.0/dist/liquid-glass.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.min.js"></script>
 <script>
 const app = new LiquidGlass('#stage', {
   theme: 'dark',
