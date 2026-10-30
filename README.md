@@ -4,7 +4,8 @@
 
 上游是一套 Compose Multiplatform 的玻璃效果库（AGSL/RuntimeShader）。本项目把它的着色器逐式翻译成 GLSL ES 3.00，重写了渲染管线与交互层，做到：**同一个折射模型、同一套组件参数、同一套弹簧手感**。
 
-- 演示：`demo/index.html`（三页：控件 / 参数实验台 / 锁屏）
+- 在线演示：<https://silverbullet-liang.github.io/liquid-glass-webgl/demo/>（三页：控件 / 参数实验台 / 锁屏）
+- 仓库：<https://github.com/silverbullet-liang/liquid-glass-webgl>
 - 体积：42 KB（minified，零依赖）
 - 需要 WebGL2（Chrome 90+ / Safari 15+ / Firefox 90+）
 
