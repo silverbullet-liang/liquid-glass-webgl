@@ -1,4 +1,4 @@
-/*! liquid-glass-webgl v1.0.0 — WebGL2 liquid glass.
+/*! liquid-glass-webgl v1.0.1 — WebGL2 liquid glass.
  * Ported from Kyant0/AndroidLiquidGlass (Apache-2.0). This port: AGPL-3.0-or-later.
  * (c) 2025 Kyant (original shader + component design); WebGL port contributors.
  * https://github.com/silverbullet-liang/liquid-glass-webgl
@@ -266,6 +266,7 @@ uniform float uPress;
 uniform vec2 uPressPos;
 uniform vec2 uOverlaySize;
 uniform float uSaturation;
+uniform float uAdaptive;
 uniform vec4 uFade;      // start, end, mode(0=top,1=bottom), enabled
 
 in vec2 vLocal;
@@ -324,6 +325,12 @@ void main() {
 
   // ---- surface tint ----------------------------------------------------
   rgb = mix(rgb, uTint, uTintA);
+
+  // ---- adaptive luminance (AdaptiveLuminanceGlass) ----------------------
+  if (uAdaptive > 0.5) {
+    float lum = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
+    rgb = mix(rgb, vec3(smoothstep(0.30, 0.72, lum)), 0.16);
+  }
 
   // ---- inner shadow ----------------------------------------------------
   if (uInner.a > 0.001) {
@@ -570,6 +577,7 @@ class GlassNode {
 
     this.press = 0;
     this.pressX = 0;
+    this.adaptive = false;
     this.fade = null; // { start, end, mode }
     this.pressY = 0;
 
@@ -967,6 +975,7 @@ class GlassRenderer {
     u(p, 'uDepth', node.depth ? 1 : 0);
     u(p, 'uDispersion', node.dispersion ? 1 : 0);
     u(p, 'uSaturation', 1.0);
+    u(p, 'uAdaptive', node.adaptive ? 1 : 0);
     if (node.tint) u(p, 'uTint', node.tint[0], node.tint[1], node.tint[2]);
     else u(p, 'uTint', 1, 1, 1);
     u(p, 'uTintA', node.tint ? node.tintA : 0);
@@ -1492,13 +1501,13 @@ function tabs(app, o) {
       const cx = (pillW / 2) * (i + 0.5) + 4;
       const active = Math.abs(pos.value - i) < 0.5;
       const color = active ? t.fg : t.fgDim;
-      drawIcon(ctx, tab.icon, cx, 30, iconSize, color, 1.9);
+      drawIcon(ctx, tab.icon, cx, 26, iconSize, color, 1.9);
       if (tab.label) {
         ctx.fillStyle = color;
         ctx.font = `600 10px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(tab.label, cx, 47);
+        ctx.fillText(tab.label, cx, 45);
       }
     });
   });

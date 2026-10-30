@@ -131,6 +131,7 @@ uniform float uPress;
 uniform vec2 uPressPos;
 uniform vec2 uOverlaySize;
 uniform float uSaturation;
+uniform float uAdaptive;
 uniform vec4 uFade;      // start, end, mode(0=top,1=bottom), enabled
 
 in vec2 vLocal;
@@ -189,6 +190,12 @@ void main() {
 
   // ---- surface tint ----------------------------------------------------
   rgb = mix(rgb, uTint, uTintA);
+
+  // ---- adaptive luminance (AdaptiveLuminanceGlass) ----------------------
+  if (uAdaptive > 0.5) {
+    float lum = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
+    rgb = mix(rgb, vec3(smoothstep(0.30, 0.72, lum)), 0.16);
+  }
 
   // ---- inner shadow ----------------------------------------------------
   if (uInner.a > 0.001) {

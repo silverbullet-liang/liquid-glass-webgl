@@ -16,11 +16,11 @@ npm i liquid-glass-webgl
 
 ```html
 <!-- UMD：挂到 window.LiquidGlass -->
-<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.1/dist/liquid-glass.min.js"></script>
 
 <!-- ESM -->
 <script type="module">
-  import { LiquidGlass } from 'https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.esm.js';
+  import { LiquidGlass } from 'https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.1/dist/liquid-glass.esm.js';
 </script>
 ```
 
@@ -28,7 +28,7 @@ npm i liquid-glass-webgl
 
 ```html
 <canvas id="stage" style="position:fixed;inset:0;width:100%;height:100%"></canvas>
-<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.0/dist/liquid-glass.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/silverbullet-liang/liquid-glass-webgl@v1.0.1/dist/liquid-glass.min.js"></script>
 <script>
 const app = new LiquidGlass('#stage', {
   theme: 'dark',
@@ -78,6 +78,7 @@ n.lensH = 24;        // 折射高度：边缘多深开始弯折
 n.lensA = 24;        // 折射强度（像素位移）
 n.depth = 1;         // 叠加一层向心的深度法线
 n.dispersion = 1;    // 7 抽样色散
+n.adaptive = true;   // 自适应亮度：背景亮则玻璃随之提亮
 n.saturation = 1.5;  // 背景饱和度（上游 vibrancy）
 n.tint = [1,1,1]; n.tintA = 0.05;
 n.highlight = { color:[1,1,1], alpha:.5, width:.5, blur:.25, falloff:1, angle:45, ambient:false };
@@ -115,6 +116,7 @@ n.invalidate();                                    // 内容变了就重画
 | `InteractiveHighlight` (0.08 全片 + 0.15 径向光) | `uPress` / `uPressPos` |
 | `LiquidButton` / `LiquidSlider` / `LiquidToggle` / `LiquidBottomTabs` | `button` / `slider` / `toggle` / `tabs` |
 | `ControlCenter` / `Dialog` / `Magnifier` / `LockScreen` / `ProgressiveBlur` | 同名工厂 |
+| `AdaptiveLuminanceGlassContent` | `node.adaptive = true` |
 
 已知差异：
 

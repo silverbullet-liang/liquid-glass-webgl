@@ -440,13 +440,13 @@ export function tabs(app, o) {
       const cx = (pillW / 2) * (i + 0.5) + 4;
       const active = Math.abs(pos.value - i) < 0.5;
       const color = active ? t.fg : t.fgDim;
-      drawIcon(ctx, tab.icon, cx, 30, iconSize, color, 1.9);
+      drawIcon(ctx, tab.icon, cx, 26, iconSize, color, 1.9);
       if (tab.label) {
         ctx.fillStyle = color;
         ctx.font = `600 10px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(tab.label, cx, 47);
+        ctx.fillText(tab.label, cx, 45);
       }
     });
   });

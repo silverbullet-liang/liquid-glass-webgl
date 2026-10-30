@@ -44,6 +44,7 @@ export class GlassNode {
 
     this.press = 0;
     this.pressX = 0;
+    this.adaptive = false;
     this.fade = null; // { start, end, mode }
     this.pressY = 0;
 
@@ -441,6 +442,7 @@ export class GlassRenderer {
     u(p, 'uDepth', node.depth ? 1 : 0);
     u(p, 'uDispersion', node.dispersion ? 1 : 0);
     u(p, 'uSaturation', 1.0);
+    u(p, 'uAdaptive', node.adaptive ? 1 : 0);
     if (node.tint) u(p, 'uTint', node.tint[0], node.tint[1], node.tint[2]);
     else u(p, 'uTint', 1, 1, 1);
     u(p, 'uTintA', node.tint ? node.tintA : 0);

@@ -36,9 +36,9 @@ function wallpaper(ctx, w, h) {
   ctx.fillRect(0, 0, w, h);
 
   const blobs = [
-    [0.14, 0.17, 0.26, '#ff7a45', 0.62],
-    [0.86, 0.12, 0.22, '#3ea6ff', 0.55],
-    [0.62, 0.40, 0.30, '#c04df2', 0.45],
+    [0.14, 0.17, 0.26, '#ff7a45', 0.46],
+    [0.86, 0.12, 0.22, '#3ea6ff', 0.42],
+    [0.62, 0.40, 0.30, '#c04df2', 0.34],
     [0.10, 0.80, 0.28, '#12d6a4', 0.34],
     [0.92, 0.66, 0.22, '#ffd60a', 0.20],
   ];
@@ -63,9 +63,9 @@ function wallpaper(ctx, w, h) {
   const size = 54, gapX = 20, gapY = 38;
   const cols = Math.max(2, Math.floor((w - 48) / (size + gapX)));
   const palette = ['#0a84ff', '#ff9f0a', '#ff375f', '#30d158', '#bf5af2', '#64d2ff', '#ffd60a', '#ff6482'];
-  for (let i = 0; i < cols * 2; i++) {
+  for (let i = 0; i < cols; i++) {
     const x = 24 + (i % cols) * (size + gapX);
-    const y = 150 + Math.floor(i / cols) * (size + gapY);
+    const y = 104 + Math.floor(i / cols) * (size + gapY);
     ctx.fillStyle = palette[i % palette.length];
     ctx.beginPath();
     ctx.roundRect(x, y, size, size, 14);
@@ -105,11 +105,11 @@ function build() {
 
   // page switcher
   app.segmented({
-    x: m, y: Math.max(H * 0.235, 210), w: cw, items: LABELS, index: page,
+    x: m, y: Math.max(H * 0.295, 262), w: cw, items: LABELS, index: page,
     onChange: (i) => { if (i !== page) { page = i; build(); } },
   });
 
-  const top = Math.max(H * 0.235, 210) + 52;
+  const top = Math.max(H * 0.295, 262) + 52;
   if (page === 0) buildControls(W, H, m, cw, top);
   else if (page === 1) buildLab(W, H, m, cw, top);
   else buildLock(W, H, m, cw, top);
@@ -131,7 +131,7 @@ function build() {
 }
 
 function buildControls(W, H, m, cw, top) {
-  const listH = Math.max(132, Math.min(178, H * 0.195));
+  const listH = Math.max(122, Math.min(160, H * 0.18));
   app.scrollContainer({
     x: m, y: top, w: cw, h: listH,
     items: [
@@ -142,10 +142,10 @@ function buildControls(W, H, m, cw, top) {
       { title: 'Shadow', sub: 'gaussian SDF' },
     ],
   });
-  let y = top + listH + 14;
+  let y = top + listH + 22;
 
   app.slider({ x: m + 12, y, w: cw - 24, value: 0.62 });
-  y += 54;
+  y += 58;
 
   const row = (yy, text, selected) => {
     const lw = Math.min(196, cw * 0.56);
@@ -161,8 +161,8 @@ function buildControls(W, H, m, cw, top) {
     app.toggle({ x: m + cw - 64, y: yy + 6, selected });
   };
   row(y, 'Bloom', true);
-  row(y + 46, 'Motion', false);
-  y += 96;
+  row(y + 48, 'Motion', false);
+  y += 100;
 
   const bw = Math.min(cw * 0.56, 214);
   app.button({ x: m, y, w: bw, icon: 'plus', label: 'New note', onClick: () => app.toast({ text: 'Note created' }) });
